@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -52,10 +53,21 @@ class HomeControllerTest {
                 .user("Odile")
                 .password("Odile123");
 
-        mockMvc.perform(login)
+        mockMvc.perform(login) // POST to /login
                 .andExpect(authenticated())
-                .andExpect(status().is3xxRedirection())
+                .andExpect(status().is3xxRedirection()) // then redirect to /
                 .andExpect(redirectedUrl("/"))
                 .andDo(print());
     }
+    @Test
+    void testHomeAccessibleWithMockUserLoggedIn() throws Exception {
+        mockMvc.perform(get("/").with(user("Pierrot"))) // another Mock User
+                .andExpect(authenticated())
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("<title>Welcome Page</title>")))
+                .andDo(print());
+    }
+
+
+
 }
